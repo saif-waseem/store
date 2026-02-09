@@ -95,7 +95,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
         .price {
@@ -190,6 +190,34 @@
         .icon {
             font-size: 18px;
         }
+
+        .variant-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+
+        .pill {
+            background: #edf2f7;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #4a5568;
+        }
+
+        .sold-out-badge {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fee2e2;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 
@@ -218,6 +246,10 @@
                     <span id="old-price" class="old-price" style="display: none;"></span>
                     <span id="discount-badge" class="discount-badge" style="display: none;"></span>
                 </div>
+
+                <div id="stock-status"></div>
+
+                <div id="product-variants"></div>
 
                 <div id="product-info"></div>
 
@@ -253,7 +285,7 @@
             // Redirect to cart deep link
             window.location.href = `ecommerceapp://user.app/cart?data=${cartData}`;
 
-            // Fallback to Play Store (or just stay on page with a message)
+            // Fallback to Play Store
             setTimeout(() => {
                 window.location.href = `https://play.google.com/store/apps/details?id=com.saas.ecommerce.user_app`;
             }, 2000);
@@ -316,7 +348,7 @@
             document.getElementById('product-img').src = product.images[0] || '';
             document.getElementById('product-name').textContent = product.name;
             document.getElementById('product-desc').textContent = product.description;
-            // Store name is set in loadProduct if available, else keep default or set here
+
             if (!document.getElementById('store-name').textContent) {
                 document.getElementById('store-name').textContent = 'متجرنا';
             }
@@ -334,10 +366,34 @@
                 }
             }
 
+            // Stock status
+            if (!product.inStock) {
+                document.getElementById('stock-status').innerHTML = '<div class="sold-out-badge">نفدت الكمية - Sold Out</div>';
+                document.querySelector('.open-app-btn').style.opacity = '0.7';
+                document.querySelector('.open-app-btn').textContent = 'نعتذر، انتهى من المخزون';
+                document.querySelector('.open-app-btn').disabled = true;
+            } else {
+                document.getElementById('stock-status').innerHTML = '';
+            }
+
+            // Variants (Colors and Sizes)
+            let variantsHtml = '';
+            const colors = (product.colors || []).filter(c => c !== 'Default' && c !== 'none');
+            const sizes = (product.sizes || []).filter(s => s !== 'Default' && s !== 'none');
+
+            if (colors.length > 0) {
+                variantsHtml += '<p style="font-size: 14px; color: #718096; margin-bottom: 5px;">الألوان المتاحة:</p>';
+                variantsHtml += '<div class="variant-pills">' + colors.map(c => `<span class="pill">${c}</span>`).join('') + '</div>';
+            }
+            if (sizes.length > 0) {
+                variantsHtml += '<p style="font-size: 14px; color: #718096; margin-bottom: 5px;">المقاسات المتاحة:</p>';
+                variantsHtml += '<div class="variant-pills">' + sizes.map(s => `<span class="pill">${s}</span>`).join('') + '</div>';
+            }
+            document.getElementById('product-variants').innerHTML = variantsHtml;
+
             // Additional info
             const infoHtml = `
-                ${product.category ? `<div class="info-row"><span class="icon">🏷️</span> ${product.category}</div>` : ''}
-                ${product.inStock ? '<div class="info-row"><span class="icon">✅</span> متوفر في المخزون</div>' : '<div class="info-row"><span class="icon">❌</span> غير متوفر</div>'}
+                ${product.inStock ? '<div class="info-row"><span class="icon">✅</span> متوفر في المخزون</div>' : ''}
                 ${product.rating ? `<div class="info-row"><span class="icon">⭐</span> ${product.rating.toFixed(1)}</div>` : ''}
             `;
             document.getElementById('product-info').innerHTML = infoHtml;
@@ -351,7 +407,6 @@
         function formatPrice(price) {
             if (typeof tenantCurrency === 'undefined' || !tenantCurrency) tenantCurrency = 'IQD';
 
-            // Format number first
             const formatted = new Intl.NumberFormat('ar-SA', {
                 style: 'decimal',
                 minimumFractionDigits: 0,
@@ -362,19 +417,16 @@
         }
 
         function openApp() {
-            // Try to open the app with deep link
             const deepLink = `ecommerceapp://user.app/product/${productId}`;
             const fallbackUrl = `https://play.google.com/store/apps/details?id=com.saas.ecommerce.user_app`;
 
             window.location.href = deepLink;
 
-            // Fallback to Play Store after 2 seconds if app doesn't open
             setTimeout(() => {
                 window.location.href = fallbackUrl;
             }, 2000);
         }
 
-        // Load product on page load
         loadProduct();
     </script>
 </body>
