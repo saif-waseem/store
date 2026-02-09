@@ -242,10 +242,23 @@
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        let tenantCurrency = 'IQD'; // Default fallback
 
         // Get product ID from URL
         const urlParams = new URLSearchParams(window.location.search);
-        const productId = urlParams.get('p') || window.location.pathname.split('/').pop().replace('.html', '');
+        const productId = urlParams.get('p') || (window.location.pathname.includes('/product/') ? window.location.pathname.split('/').pop().replace('.html', '') : null);
+        const cartData = urlParams.get('cart');
+
+        if (cartData) {
+            // Redirect to cart deep link
+            window.location.href = `ecommerceapp://user.app/cart?data=${cartData}`;
+
+            // Fallback to Play Store (or just stay on page with a message)
+            setTimeout(() => {
+                window.location.href = `https://play.google.com/store/apps/details?id=com.saas.ecommerce.user_app`;
+            }, 2000);
+        }
+
 
         // Load product data
         async function loadProduct() {
@@ -263,6 +276,25 @@
                 }
 
                 const product = doc.data();
+
+                // Fetch tenant for currency
+                if (product.tenantId) {
+                    try {
+                        const tenantDoc = await db.collection('tenants').doc(product.tenantId).get();
+                        if (tenantDoc.exists) {
+                            const tenant = tenantDoc.data();
+                            if (tenant.currencyUnit) {
+                                tenantCurrency = tenant.currencyUnit;
+                            }
+                            if (tenant.name) {
+                                document.getElementById('store-name').textContent = tenant.name;
+                            }
+                        }
+                    } catch (e) {
+                        console.log('Error loading tenant:', e);
+                    }
+                }
+
                 displayProduct(product);
             } catch (error) {
                 console.error('Error loading product:', error);
@@ -284,10 +316,12 @@
             document.getElementById('product-img').src = product.images[0] || '';
             document.getElementById('product-name').textContent = product.name;
             document.getElementById('product-desc').textContent = product.description;
-            document.getElementById('product-price').textContent = formatPrice(product.price);
+            // Store name is set in loadProduct if available, else keep default or set here
+            if (!document.getElementById('store-name').textContent) {
+                document.getElementById('store-name').textContent = 'متجرنا';
+            }
 
-            // Store name (you may need to fetch tenant data)
-            document.getElementById('store-name').textContent = 'متجرنا';
+            document.getElementById('product-price').textContent = formatPrice(product.price);
 
             // Old price and discount
             if (product.oldPrice) {
@@ -315,15 +349,21 @@
         }
 
         function formatPrice(price) {
-            return new Intl.NumberFormat('ar-SA', {
-                style: 'currency',
-                currency: 'SAR'
+            if (typeof tenantCurrency === 'undefined' || !tenantCurrency) tenantCurrency = 'IQD';
+
+            // Format number first
+            const formatted = new Intl.NumberFormat('ar-SA', {
+                style: 'decimal',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
             }).format(price);
+
+            return `${formatted} ${tenantCurrency}`;
         }
 
         function openApp() {
             // Try to open the app with deep link
-            const deepLink = `ecommerceapp://product/${productId}`;
+            const deepLink = `ecommerceapp://user.app/product/${productId}`;
             const fallbackUrl = `https://play.google.com/store/apps/details?id=com.saas.ecommerce.user_app`;
 
             window.location.href = deepLink;
