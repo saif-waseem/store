@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GD ART - Account Deletion</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .lang-switch {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .lang-btn {
+            background: #edf2f7;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .lang-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        h1 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        p {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            text-align: right;
+            margin-bottom: 15px;
+        }
+
+        [dir="ltr"] .form-group {
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #e53e3e;
+            color: white;
+            padding: 14px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background 0.2s;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #c53030;
+        }
+
+        .footer-note {
+            font-size: 13px;
+            color: #718096;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        hr {
+            margin: 30px 0;
+            border: 0;
+            border-top: 1px solid #edf2f7;
+        }
+    </style>
+</head>
+
+<body dir="rtl">
+    <div class="card">
+        <div class="logo">GD ART</div>
+
+        <div class="lang-switch">
+            <button onclick="setLang('ar')" id="btn-ar" class="lang-btn active">العربية</button>
+            <button onclick="setLang('en')" id="btn-en" class="lang-btn">English</button>
+            <button onclick="setLang('ku')" id="btn-ku" class="lang-btn">Kurdî</button>
+        </div>
+
+        <h1 id="title">طلب حذف الحساب والبيانات</h1>
+        <p id="desc">نحن في <b>GD ART</b> نحترم خصوصيتك. إذا كنت ترغب في حذف حسابك وجميع البيانات المرتبطة به، يرجى ملء
+            النموذج أدناه.</p>
+
+        <form action="javascript:void(0);" onsubmit="handleSubmit()">
+            <div class="form-group">
+                <label id="label-id">البريد الإلكتروني أو رقم الهاتف المرتبط:</label>
+                <input type="text" id="input-id" placeholder="..." required>
+            </div>
+            <div class="form-group">
+                <label id="label-reason">سبب الحذف (اختياري):</label>
+                <input type="text" id="input-reason" placeholder="...">
+            </div>
+            <p id="note" style="font-size: 13px; color: #718096;"></p>
+            <button type="submit" id="btn-submit" class="btn">إرسال طلب الحذف</button>
+        </form>
+
+        <hr>
+        <p id="footer" style="font-size: 14px; color: #4a5568;"></p>
+    </div>
+
+    <script>
+        const translations = {
+            ar: {
+                title: 'طلب حذف الحساب والبيانات',
+                desc: 'نحن في <b>GD ART</b> نحترم خصوصيتك. إذا كنت ترغب في حذف حسابك وجميع البيانات المرتبطة به، يرجى ملء النموذج أدناه.',
+                labelId: 'البريد الإلكتروني أو رقم الهاتف المرتبط:',
+                labelReason: 'سبب الحذف (اختياري):',
+                note: 'ملاحظة: سيتم حذف جميع البيانات الشخصية وسجل الطلبات ونقاط الولاء بشكل نهائي خلال 30 يوماً.',
+                btnSubmit: 'إرسال طلب الحذف',
+                footer: 'يمكنك أيضاً طلب الحذف عبر مراسلتنا من خلال التطبيق مباشرة.',
+                success: 'تم استلام طلبك بنجاح. سنقوم بمعالجة الطلب خلال 30 يوماً.',
+                dir: 'rtl'
+            },
+            en: {
+                title: 'Account & Data Deletion Request',
+                desc: 'We at <b>GD ART</b> respect your privacy. If you wish to delete your account and all associated data, please fill out the form below.',
+                labelId: 'Email or Phone Number associated with the account:',
+                labelReason: 'Reason for deletion (optional):',
+                note: 'Note: All personal data, order history, and loyalty points will be permanently deleted within 30 days.',
+                btnSubmit: 'Submit Deletion Request',
+                footer: 'You can also request deletion directly through the app support chat.',
+                success: 'Your request has been received. We will process it within 30 days.',
+                dir: 'ltr'
+            },
+            ku: {
+                title: 'داواکاری سڕینەوەی هەژمار و زانیارییەکان',
+                desc: 'ئێمە لە <b>GD ART</b> ڕێز لە تایبەتمەندییەکانت دەگرین. ئەگەر دەتەوێت هەژمارەکەت و هەموو زانیارییە پەیوەندیدارەکان بسڕیتەوە، تکایە ئەم فۆرمەی خوارەوە پڕ بکەرەوە.',
+                labelId: 'ئیمەیڵ یان ژمارەی مۆبایل:',
+                labelReason: 'هۆکاری سڕینەوە (ئارەزوومەندانە):',
+                note: 'تێبینی: هەموو زانیارییە کەسییەکان، مێژووی داواکارییەکان و خاڵەکانی دڵسۆزی لە ماوەی ٣٠ ڕۆژدا بە یەکجاری دەسڕێنەوە.',
+                btnSubmit: 'ناردنی داواکاری سڕینەوە',
+                footer: 'دەتوانیت لە ڕێگەی پشتگیری ناو ئەپڵیکەیشنەکەش داوای سڕینەوە بکەیت.',
+                success: 'داواکارییەکەت وەرگیرا. لە ماوەی ٣٠ ڕۆژدا جێبەجێ دەکرێت.',
+                dir: 'rtl'
+            }
+        };
+
+        let currentLang = 'ar';
+
+        function setLang(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+
+            document.body.dir = t.dir;
+            document.getElementById('title').innerText = t.title;
+            document.getElementById('desc').innerHTML = t.desc;
+            document.getElementById('label-id').innerText = t.labelId;
+            document.getElementById('label-reason').innerText = t.labelReason;
+            document.getElementById('note').innerText = t.note;
+            document.getElementById('btn-submit').innerText = t.btnSubmit;
+            document.getElementById('footer').innerText = t.footer;
+
+            // Header buttons
+            ['ar', 'en', 'ku'].forEach(l => {
+                document.getElementById('btn-' + l).classList.remove('active');
+            });
+            document.getElementById('btn-' + lang).classList.add('active');
+        }
+
+        function handleSubmit() {
+            alert(translations[currentLang].success);
+            document.getElementById('input-id').value = '';
+            document.getElementById('input-reason').value = '';
+        }
+
+        // Init
+        setLang('ar');
+    </script>
+</body>
+
+</html>
